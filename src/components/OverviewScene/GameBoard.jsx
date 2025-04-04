@@ -1,6 +1,6 @@
 // src/components/OverviewScene/GameBoard.jsx
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars } from '@react-three/drei'
+import { OrbitControls, Stars, Grid } from '@react-three/drei'
 import Planet from './Planet'
 import Warp from './Warp'
 import React, { useRef, useMemo } from 'react'
@@ -27,6 +27,24 @@ function Starfield() {
       saturation={0} 
       fade 
       speed={1}
+    />
+  )
+}
+
+// Cyan grid component
+function CyanGrid() {
+  return (
+    <Grid
+      cellSize={2}
+      cellThickness={0.3}
+      cellColor="#00ffff"
+      sectionSize={10}
+      sectionThickness={0.5}
+      sectionColor="#008080"
+      fadeDistance={80}
+      fadeStrength={1}
+      infiniteGrid
+      position={[0, -5, 0]}
     />
   )
 }
@@ -104,6 +122,38 @@ function ForegroundStars({ count = 100, minDist = 5, maxDist = 20 }) {
   )
 }
 
+// Custom camera controls with constraints
+function ConstrainedControls({ radius }) {
+  const controlsRef = useRef()
+  
+  // The maximum distance should be enough to see all planets
+  const maxDistance = radius * 2.5
+  
+  // The minimum distance should allow seeing a group of planets clearly
+  const minDistance = radius * 0.5
+  
+  // Limit vertical rotation to keep the view focused on the game plane
+  const minPolarAngle = Math.PI * 0.1 // Slightly above the horizontal plane
+  const maxPolarAngle = Math.PI * 0.5 // Maximum 90 degrees (looking straight down)
+  
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      enableZoom={true}
+      minDistance={minDistance}
+      maxDistance={maxDistance}
+      minPolarAngle={minPolarAngle}
+      maxPolarAngle={maxPolarAngle}
+      enableDamping={true}
+      dampingFactor={0.05}
+      rotateSpeed={0.7}
+      zoomSpeed={1.0}
+      enablePan={false} // Disable panning to keep center focused
+      makeDefault
+    />
+  )
+}
+
 export default function GameBoard() {
   const totalPlayers = 6
   const planetsPerPlayer = 5
@@ -162,6 +212,9 @@ export default function GameBoard() {
         {/* Starfield background */}
         <Starfield />
         
+        {/* Cyan Grid */}
+        <CyanGrid />
+        
         {/* Scene lighting */}
         <ambientLight intensity={0.5} />
         <directionalLight position={[5, 10, 5]} intensity={0.6} />
@@ -175,8 +228,8 @@ export default function GameBoard() {
         {/* Foreground stars with custom geometry */}
         <ForegroundStars count={150} minDist={3} maxDist={20} />
         
-        {/* Controls */}
-        <OrbitControls enableZoom={true} minDistance={5} maxDistance={40} />
+        {/* Constrained camera controls */}
+        <ConstrainedControls radius={radius} />
       </Canvas>
       
       {/* HUD overlay */}

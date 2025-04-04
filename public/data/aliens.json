@@ -2,57 +2,150 @@
   "aliens": [
     {
       "id": 1,
-      "playerId": 1,
-      "name": "Cosmic Entity",
-      "description": "A mysterious being with the power to bend space and time. This alien can manipulate the fabric of reality to their advantage.",
-      "color": "#7e57c2",
-      "avatar": "👾",
-      "power": "Once per turn, can move one of their ships to any planet."
+      "name": "Mirror",
+      "power": "Reversal",
+      "type": "Main Player Only",
+      "timing": {
+        "phase": "Reveal",
+        "trigger": "After encounter cards are selected, but before they are revealed"
+      },
+      "usage": "Optional",
+      "description": "As a main player, after encounter cards are selected but before they are revealed, you may use this power to call for a reversal. This changes the value of any attack cards that are revealed in this encounter by reversing their digits (e.g. 15 → 51, 20 → 02, 08 → 80).",
+      "effect": {
+        "onEvent": "cards-about-to-be-revealed",
+        "condition": {
+          "playerRole": "main",
+          "hasEncounterCard": true
+        },
+        "action": {
+          "ifUsed": "reverseAllAttackCardValues",
+          "description": "Flip the digits of all attack cards involved in this encounter."
+        }
+      },
+      "flavor": "Springing from a world so reflective that everything is mirrored, the Mirrors learned to twist reality itself when foes least expect it.",
+      "imagePath": "/data/images/aliens/mirror.png"
     },
     {
       "id": 2,
-      "playerId": 2,
-      "name": "Void Nomad",
-      "description": "Ancient travelers of the void between stars. They have learned to exist in the harshest environments of space.",
-      "color": "#2196f3",
-      "avatar": "🌌",
-      "power": "Ships can never be removed from the game and always return to home planets."
+      "name": "Pacifist",
+      "power": "Peace",
+      "type": "Encounters",
+      "timing": {
+        "phase": "Reveal",
+        "trigger": "When encounter cards are revealed"
+      },
+      "usage": "Mandatory",
+      "description": "As a main player, if you reveal a Negotiation card while your opponent reveals an Attack card, you automatically win the encounter instead of losing your ships.",
+      "effect": {
+        "onEvent": "cards-revealed",
+        "condition": {
+          "playerRole": "main",
+          "yourEncounterCard": "Negotiation"
+        },
+        "action": {
+          "ifUsed": "winWithNegotiationIfOpponentAttack",
+          "description": "You win the encounter if you reveal a Negotiation card against an Attack card."
+        }
+      },
+      "flavor": "The Pacifists discovered that refusing to fight can sometimes be the most devastating tactic in a universe fueled by aggression.",
+      "imagePath": "/data/images/aliens/pacifist.png"
     },
     {
       "id": 3,
-      "playerId": 3,
-      "name": "Star Devourer",
-      "description": "A species that evolved to consume stellar energy. Their appetite for stars is legendary across the galaxy.",
-      "color": "#ff9800",
-      "avatar": "🌟",
-      "power": "Can sacrifice a ship to gain an additional action during their turn."
+      "name": "Chosen",
+      "power": "Divine Selection",
+      "type": "Encounters",
+      "timing": {
+        "phase": "Destiny",
+        "trigger": "When drawing a destiny card"
+      },
+      "usage": "Optional",
+      "description": "As a main player, you may look at multiple destiny cards instead of just one and select which color you will encounter. Place any unused cards on top or bottom of the deck in any order.",
+      "effect": {
+        "onEvent": "destiny-draw",
+        "condition": {
+          "playerRole": "main"
+        },
+        "action": {
+          "ifUsed": "chooseDestiny",
+          "description": "Look at multiple destiny cards, then pick and arrange them."
+        }
+      },
+      "flavor": "Guided by cosmic prophets, the Chosen alter destiny itself and strike precisely where fortune favors them most.",
+      "imagePath": "/data/images/aliens/chosen.png"
     },
     {
       "id": 4,
-      "playerId": 4,
-      "name": "Quantum Hivemind",
-      "description": "A collective consciousness that exists simultaneously across multiple dimensions and timelines.",
-      "color": "#4caf50",
-      "avatar": "🧠",
-      "power": "Can see one card from opponent's hand before battles."
+      "name": "Masochist",
+      "power": "Pain Gains",
+      "type": "Encounters",
+      "timing": {
+        "phase": "Any",
+        "trigger": "Whenever you lose ships"
+      },
+      "usage": "Mandatory",
+      "description": "Any time you lose ships (to the Warp or otherwise), place markers on this alien. If you lose enough ships, you may declare an immediate victory by fulfilling your twisted win condition.",
+      "effect": {
+        "onEvent": "ships-lost",
+        "condition": {
+          "losingShips": "you"
+        },
+        "action": {
+          "ifUsed": "trackShipsLost",
+          "description": "Each lost ship brings you closer to declaring victory."
+        }
+      },
+      "flavor": "Decades of oppression taught the Masochists to harness suffering, turning the pain of defeat into their ultimate triumph.",
+      "imagePath": "/data/images/aliens/masochist.png"
     },
     {
       "id": 5,
-      "playerId": 5,
-      "name": "Nebula Ghost",
-      "description": "Ethereal entities born in the heart of nebulae. They can phase through solid matter and energy fields.",
-      "color": "#e91e63",
-      "avatar": "👻",
-      "power": "Ships can pass through obstacles and defensive structures."
+      "name": "Inferno",
+      "power": "Scorched Earth",
+      "type": "Encounters",
+      "timing": {
+        "phase": "Resolution",
+        "trigger": "When you win an encounter"
+      },
+      "usage": "Optional",
+      "description": "As a main player, after winning an encounter, you may burn the planet you just won, removing it and all ships on it from the game.",
+      "effect": {
+        "onEvent": "encounter-resolution",
+        "condition": {
+          "playerRole": "main",
+          "result": "win"
+        },
+        "action": {
+          "ifUsed": "burnPlanet",
+          "description": "Remove the targeted planet from play and destroy any ships on it."
+        }
+      },
+      "flavor": "Born in the heart of a dying star, the Inferno race leaves only ashes in their wake, scorching entire worlds to claim victory.",
+      "imagePath": "/data/images/aliens/inferno.png"
     },
     {
       "id": 6,
-      "playerId": 6,
-      "name": "Celestial Architect",
-      "description": "Master builders who reshape celestial bodies according to their artistic vision and practical needs.",
-      "color": "#00bcd4",
-      "avatar": "🏛️",
-      "power": "Can modify planet attributes once per game."
+      "name": "Void",
+      "power": "Oblivion",
+      "type": "Encounters",
+      "timing": {
+        "phase": "Resolution",
+        "trigger": "When ships would go to the Warp"
+      },
+      "usage": "Mandatory",
+      "description": "Whenever any ships (yours or an opponent's) would be sent to the Warp, remove them from the game entirely instead. They cannot be retrieved by any means.",
+      "effect": {
+        "onEvent": "ships-to-warp",
+        "condition": {
+          "warpMovement": "any"
+        },
+        "action": {
+          "ifUsed": "removeShipsFromGame",
+          "description": "Ships that would go to the Warp are instead devoured, disappearing forever."
+        }
+      },
+      "flavor": "A cosmic anomaly feared by all, the Void consumes anything that enters its gravitational grasp, erasing entire fleets from existence.",
+      "imagePath": "/data/images/aliens/void.png"
     }
   ]
-} 
+}

@@ -6,7 +6,8 @@ export default function AlienInfo({ playerId = 1 }) {
     name: 'Loading...',
     description: 'Alien information loading...',
     color: '#888',
-    avatar: null
+    avatar: null,
+    imagePath: null
   });
   
   const [isLoading, setIsLoading] = useState(true);
@@ -41,7 +42,8 @@ export default function AlienInfo({ playerId = 1 }) {
           name: 'Unknown Alien',
           description: 'Data corrupted or unavailable. This mysterious species remains unidentified.',
           color: '#7e57c2',
-          avatar: '❓'
+          avatar: '❓',
+          imagePath: null
         });
         setIsLoading(false);
       }
@@ -49,9 +51,6 @@ export default function AlienInfo({ playerId = 1 }) {
     
     loadAlienInfo();
   }, [playerId]);
-  
-  // Display the power tooltip on hover
-  const [showPower, setShowPower] = useState(false);
   
   // For debugging - fallback to hardcoded data if fetch fails
   useEffect(() => {
@@ -64,7 +63,8 @@ export default function AlienInfo({ playerId = 1 }) {
           description: 'A mysterious being with the power to bend space and time. This alien can manipulate the fabric of reality to their advantage.',
           color: '#7e57c2',
           avatar: '👾',
-          power: 'Once per turn, can move one of their ships to any planet.'
+          power: 'Once per turn, can move one of their ships to any planet.',
+          imagePath: '/images/aliens/cosmic_entity.png'
         });
         setIsLoading(false);
       }
@@ -73,39 +73,141 @@ export default function AlienInfo({ playerId = 1 }) {
     return () => clearTimeout(timer);
   }, [isLoading]);
   
+  // Display the power tooltip on hover
+  const [showPower, setShowPower] = useState(false);
+  
   return (
     <div 
-      className="p-4 bg-gray-800 bg-opacity-80 rounded-lg text-white max-w-xs shadow-lg relative border border-indigo-900"
+      className="relative rounded-lg shadow-lg overflow-hidden"
       onMouseEnter={() => setShowPower(true)}
       onMouseLeave={() => setShowPower(false)}
-      style={{ minWidth: '280px' }}
+      style={{
+        width: '320px',
+        background: 'linear-gradient(180deg, rgba(48, 52, 63, 0.95) 0%, rgba(30, 34, 42, 0.95) 100%)',
+        border: '1px solid rgba(83, 92, 121, 0.3)',
+        backdropFilter: 'blur(4px)',
+        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+      }}
     >
-      <div className="flex items-start space-x-3">
-        {/* Alien avatar/icon */}
-        <div 
-          className="w-12 h-12 rounded-full flex items-center justify-center text-2xl border border-white"
-          style={{ backgroundColor: alienInfo.color }}
-        >
-          {alienInfo.avatar || '?'}
+      {/* Header bar - metallic style */}
+      <div 
+        className="flex items-center justify-between px-4 py-2"
+        style={{
+          background: 'linear-gradient(90deg, #1e232b 0%, #2c3341 50%, #1e232b 100%)', 
+          borderBottom: '1px solid rgba(83, 92, 121, 0.5)',
+          boxShadow: 'inset 0 -1px 0 rgba(0, 0, 0, 0.3)'
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_5px_rgba(74,222,128,0.7)]"></div>
+          <span className="text-xs font-bold tracking-wider text-gray-300 uppercase">Species Analysis</span>
         </div>
-        
-        <div className="flex-1">
-          {/* Alien name */}
-          <h3 className="font-bold text-lg uppercase tracking-wider">
-            {isLoading ? 'LOADING...' : alienInfo.name}
-          </h3>
+        <div className="text-xs text-gray-400">ID: {playerId.toString().padStart(4, '0')}</div>
+      </div>
+      
+      {/* Main content */}
+      <div className="p-4">
+        <div className="flex items-start space-x-4">
+          {/* Alien avatar with fancy border */}
+          <div 
+            className="relative"
+            style={{
+              padding: '2px',
+              background: `linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(83, 92, 121, 0.1) 100%)`,
+              borderRadius: '50%',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            {alienInfo.imagePath ? (
+              <div 
+                className="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden"
+                style={{ 
+                  backgroundColor: alienInfo.color,
+                  boxShadow: `inset 0 2px 10px rgba(0, 0, 0, 0.5), 0 0 15px ${alienInfo.color}40`
+                }}
+              >
+                <img 
+                  src={alienInfo.imagePath} 
+                  alt={alienInfo.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.warn(`Image failed to load: ${alienInfo.imagePath}`);
+                    e.target.style.display = 'none';
+                    e.target.parentNode.textContent = alienInfo.avatar || '?';
+                  }}
+                />
+              </div>
+            ) : (
+              <div 
+                className="w-16 h-16 rounded-full flex items-center justify-center text-3xl"
+                style={{ 
+                  backgroundColor: alienInfo.color,
+                  boxShadow: `inset 0 2px 10px rgba(0, 0, 0, 0.5), 0 0 15px ${alienInfo.color}40`
+                }}
+              >
+                {alienInfo.avatar || '?'}
+              </div>
+            )}
+          </div>
           
-          {/* Alien description */}
-          <p className="text-sm text-gray-300 mt-1">
-            {alienInfo.description}
-          </p>
+          <div className="flex-1">
+            {/* Alien name with tech effect */}
+            <h3 
+              className="font-bold text-lg uppercase tracking-wider"
+              style={{
+                color: '#e2e8f0',
+                textShadow: '0 0 5px rgba(255, 255, 255, 0.3)',
+                letterSpacing: '0.05em'
+              }}
+            >
+              {isLoading ? 'SCANNING...' : alienInfo.name}
+            </h3>
+            
+            {/* Technical scanlines effect */}
+            <div className="w-full h-1 my-2" style={{
+              background: 'linear-gradient(90deg, transparent 0%, rgba(83, 92, 121, 0.5) 20%, rgba(83, 92, 121, 0.5) 80%, transparent 100%)'
+            }}></div>
+            
+            {/* Alien description with space theme */}
+            <p 
+              className="text-sm mt-1"
+              style={{ color: '#a4b0c5', lineHeight: '1.4' }}
+            >
+              {alienInfo.description}
+            </p>
+          </div>
         </div>
       </div>
       
-      {/* Power tooltip */}
+      {/* Bottom indicator bar */}
+      <div 
+        className="px-4 py-2 flex justify-between items-center text-xs" 
+        style={{
+          background: 'rgba(22, 26, 32, 0.8)',
+          borderTop: '1px solid rgba(83, 92, 121, 0.2)'
+        }}
+      >
+        <span className="text-green-400">■ ONLINE</span>
+        <span className="text-gray-400">HOVER FOR ABILITIES</span>
+      </div>
+      
+      {/* Power tooltip - tech style */}
       {showPower && alienInfo.power && (
-        <div className="absolute left-0 top-full mt-2 p-3 bg-gray-900 bg-opacity-90 rounded text-sm border border-gray-700 w-full z-10">
-          <span className="text-yellow-400 font-bold">Power:</span> {alienInfo.power}
+        <div 
+          className="absolute left-0 top-full mt-2 p-4 z-10 rounded"
+          style={{
+            background: 'linear-gradient(180deg, rgba(22, 26, 32, 0.95) 0%, rgba(17, 20, 25, 0.95) 100%)',
+            border: '1px solid rgba(83, 92, 121, 0.3)',
+            backdropFilter: 'blur(4px)',
+            boxShadow: '0 10px 20px rgba(0, 0, 0, 0.5)',
+            width: '100%'
+          }}
+        >
+          <div className="flex items-center mb-2">
+            <div className="w-1 h-4 bg-yellow-400 mr-2" style={{ boxShadow: '0 0 8px rgba(250, 204, 21, 0.8)' }}></div>
+            <span className="text-yellow-400 font-bold uppercase tracking-wider text-sm">Galactic Power</span>
+          </div>
+          <p className="text-gray-300 text-sm">{alienInfo.power}</p>
         </div>
       )}
     </div>
