@@ -1,18 +1,13 @@
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
+// src/App.jsx
+import React from 'react'
+import GameBoard from './components/OverviewScene/GameBoard'
 
-export default function App() {
+function App() {
   return (
-    <div className="h-screen">
-      <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[5, 5, 5]} />
-        <mesh rotation={[1, 1, 0]}>
-          <boxGeometry />
-          <meshStandardMaterial color="orange" />
-        </mesh>
-        <OrbitControls />
-      </Canvas>
+    <div className="h-screen w-screen bg-black overflow-hidden">
+      <GameBoard />
     </div>
   )
 }
+
+export default App

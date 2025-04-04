@@ -1,0 +1,58 @@
+{
+  "aliens": [
+    {
+      "id": 1,
+      "playerId": 1,
+      "name": "Cosmic Entity",
+      "description": "A mysterious being with the power to bend space and time. This alien can manipulate the fabric of reality to their advantage.",
+      "color": "#7e57c2",
+      "avatar": "👾",
+      "power": "Once per turn, can move one of their ships to any planet."
+    },
+    {
+      "id": 2,
+      "playerId": 2,
+      "name": "Void Nomad",
+      "description": "Ancient travelers of the void between stars. They have learned to exist in the harshest environments of space.",
+      "color": "#2196f3",
+      "avatar": "🌌",
+      "power": "Ships can never be removed from the game and always return to home planets."
+    },
+    {
+      "id": 3,
+      "playerId": 3,
+      "name": "Star Devourer",
+      "description": "A species that evolved to consume stellar energy. Their appetite for stars is legendary across the galaxy.",
+      "color": "#ff9800",
+      "avatar": "🌟",
+      "power": "Can sacrifice a ship to gain an additional action during their turn."
+    },
+    {
+      "id": 4,
+      "playerId": 4,
+      "name": "Quantum Hivemind",
+      "description": "A collective consciousness that exists simultaneously across multiple dimensions and timelines.",
+      "color": "#4caf50",
+      "avatar": "🧠",
+      "power": "Can see one card from opponent's hand before battles."
+    },
+    {
+      "id": 5,
+      "playerId": 5,
+      "name": "Nebula Ghost",
+      "description": "Ethereal entities born in the heart of nebulae. They can phase through solid matter and energy fields.",
+      "color": "#e91e63",
+      "avatar": "👻",
+      "power": "Ships can pass through obstacles and defensive structures."
+    },
+    {
+      "id": 6,
+      "playerId": 6,
+      "name": "Celestial Architect",
+      "description": "Master builders who reshape celestial bodies according to their artistic vision and practical needs.",
+      "color": "#00bcd4",
+      "avatar": "🏛️",
+      "power": "Can modify planet attributes once per game."
+    }
+  ]
+} 
