@@ -2,20 +2,19 @@
 import React, { useState, useEffect, useRef } from 'react'
 import PhaseDisplay from './PhaseDisplay'
 import Inventory from './Inventory'
+import './HUD.css'
 
 // Alien HUD component that displays info about the current player's alien
-export default function HUD({ alienId = 3 }) {
+export default function HUD({ alienId = 5, currentPhase = 1, playerColor = 'blue', cards = [] }) {
   const [aliens, setAliens] = useState([]);
-  const [selectedAlienIndex, setSelectedAlienIndex] = useState(0);
+  const [selectedAlien, setSelectedAlien] = useState(null);
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imagePath, setImagePath] = useState('');
   const [triedPaths, setTriedPaths] = useState([]);
   const [minimized, setMinimized] = useState(false);
+  const [playerCards, setPlayerCards] = useState([]);
   const imgRef = useRef(null);
-  
-  // Current selected alien data
-  const selectedAlien = aliens[selectedAlienIndex] || null;
   
   // Load alien data from the JSON file
   useEffect(() => {
@@ -32,12 +31,15 @@ export default function HUD({ alienId = 3 }) {
           
           // If alienId is specified, find the matching alien
           if (alienId) {
-            const index = data.aliens.findIndex(alien => alien.id === alienId);
-            if (index !== -1) {
-              setSelectedAlienIndex(index);
-              console.log(`Selected alien ID ${alienId} at index ${index}`);
+            const alien = data.aliens.find(alien => alien.id === alienId);
+            if (alien) {
+              setSelectedAlien(alien);
+              console.log(`Selected alien ID ${alienId}: ${alien.name}`);
+              // Add detailed debug log for loaded alien data
+              console.log(`[HUD] Loaded alien data: ID=${alien.id}, Name=${alien.name}, Power=${alien.power || 'N/A'}, Image=${alien.imagePath || 'N/A'}`);
             } else {
               console.warn(`Alien ID ${alienId} not found, defaulting to first alien`);
+              setSelectedAlien(data.aliens[0]);
             }
           }
         }
@@ -48,6 +50,16 @@ export default function HUD({ alienId = 3 }) {
     
     loadAlienData();
   }, [alienId]);
+
+  // Update player cards when cards prop changes
+  useEffect(() => {
+    if (cards && cards.length > 0) {
+      console.log("Received player cards:", cards);
+      setPlayerCards(cards);
+    } else {
+      setPlayerCards([]);
+    }
+  }, [cards]);
 
   // Reset image state when switching aliens and try different paths
   useEffect(() => {
@@ -80,7 +92,7 @@ export default function HUD({ alienId = 3 }) {
     } else {
       setImagePath('');
     }
-  }, [selectedAlienIndex, selectedAlien]);
+  }, [selectedAlien]);
 
   // Try the next path when an image fails to load
   const tryNextPath = () => {
@@ -117,16 +129,9 @@ export default function HUD({ alienId = 3 }) {
       img.src = imagePath;
     }
   }, [imagePath]);
-
-  // Helper function to cycle through available aliens (for testing)
-  const cycleToNextAlien = () => {
-    if (aliens.length > 1) {
-      setSelectedAlienIndex((prevIndex) => (prevIndex + 1) % aliens.length);
-    }
-  };
   
   // Toggle minimized state
-  const toggleMinimized = () => {
+  const toggleMinimize = () => {
     setMinimized(!minimized);
   };
 
@@ -140,6 +145,7 @@ export default function HUD({ alienId = 3 }) {
           style={{
             backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255, 255, 255, 0.03) 1px, rgba(255, 255, 255, 0.03) 2px)',
             backgroundSize: '100% 2px',
+            animation: 'scanline 8s linear infinite'
           }}
         />
         
@@ -175,22 +181,22 @@ export default function HUD({ alienId = 3 }) {
       
       {/* HUD Components */}
       <div className="absolute top-6 left-1/2 transform -translate-x-1/2 pointer-events-auto">
-        <PhaseDisplay />
+        <PhaseDisplay currentPhase={currentPhase} />
       </div>
       
       {/* Inventory at bottom */}
       <div className="absolute bottom-6 left-0 right-0">
-        <Inventory />
+        <Inventory cards={playerCards} />
       </div>
       
       {/* Alien Card on left side with minimize functionality */}
       {selectedAlien && (
         <div className="absolute top-6 left-6 pointer-events-auto">
           <div 
-            className="relative rounded-md overflow-hidden bg-black transition-all duration-300"
+            className={`relative rounded-md overflow-hidden bg-black transition-all duration-300 ${minimized ? 'alien-card-minimized' : ''}`}
             style={{
-              width: '280px',
-              border: '3px solid rgba(0, 200, 255, 0.8)',
+              width: minimized ? '180px' : '280px',
+              border: `3px solid ${playerColor || 'rgba(0, 200, 255, 0.8)'}`,
               boxShadow: '0 0 20px rgba(0, 200, 255, 0.5)'
             }}
           >
@@ -198,176 +204,62 @@ export default function HUD({ alienId = 3 }) {
             <div 
               className="w-full text-center py-2 px-3 font-bold text-lg flex justify-between items-center"
               style={{
-                borderBottom: minimized ? 'none' : '2px solid rgba(0, 200, 255, 0.8)',
-                background: 'linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,60,120,0.7) 50%, rgba(0,0,0,0.7) 100%)'
+                backgroundColor: 'rgba(0, 20, 40, 0.8)',
+                borderBottom: minimized ? 'none' : '2px solid rgba(0, 150, 200, 0.5)'
               }}
             >
-              <span 
-                className="flex-grow text-left"
+              <span>{selectedAlien.name}</span>
+              <button 
+                onClick={toggleMinimize}
+                className="text-xs bg-blue-800 hover:bg-blue-700 px-2 py-1 rounded transition"
               >
-                {selectedAlien.name.toUpperCase()}
-              </span>
-              
-              <div className="flex items-center">
-                <button 
-                  className="w-5 h-5 flex items-center justify-center rounded bg-cyan-900 hover:bg-cyan-800 text-cyan-400 text-xs"
-                  onClick={toggleMinimized}
-                >
-                  {minimized ? '+' : '-'}
-                </button>
-              </div>
+                {minimized ? '+' : '-'}
+              </button>
             </div>
             
-            {/* Collapsible content */}
-            <div 
-              className="overflow-hidden transition-all duration-300"
-              style={{ 
-                maxHeight: minimized ? '0' : '1000px',
-                opacity: minimized ? 0 : 1
-              }}
-            >
-              {/* Alien Image Section with full-size display */}
-              <div className="bg-black overflow-hidden" style={{ height: '260px' }}>
-                {imageError && triedPaths.indexOf(imagePath) === triedPaths.length - 1 ? (
-                  <div className="text-center p-2">
-                    <div className="text-4xl">👽</div>
-                    <div className="text-xs text-gray-400 mt-2">Image could not be loaded</div>
-                    <div className="text-xs text-gray-500 mt-1 max-w-full break-words">
-                      Current path: {imagePath}
+            {/* Alien Card Body - conditionally render the entire content */}
+            {!minimized && (
+              <div className="bg-black bg-opacity-80 p-3">
+                {/* Alien Image Section */}
+                <div className="mb-3 h-40 flex justify-center items-center bg-gray-900 rounded overflow-hidden">
+                  {imageLoaded && !imageError ? (
+                    <img 
+                      ref={imgRef}
+                      src={imagePath} 
+                      alt={selectedAlien.name}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  ) : imageError ? (
+                    <div className="text-center p-4 text-red-400">
+                      <div className="text-xs">Image not available</div>
                     </div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      Tried all {triedPaths.length} possible paths
+                  ) : (
+                    <div className="text-center p-4 text-gray-400">
+                      <div className="text-xs">Loading image...</div>
                     </div>
-                  </div>
-                ) : (
-                  <div 
-                    className="relative w-full h-full overflow-hidden"
-                  >
-                    {/* Main image - enlarged to extend beyond borders */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <img 
-                        ref={imgRef}
-                        src={imagePath}
-                        alt={selectedAlien.name}
-                        className="object-contain"
-                        style={{ 
-                          width: '380px', // Even larger to extend more outside container
-                          height: '380px', // Even larger to extend more outside container
-                          filter: 'drop-shadow(0 0 10px rgba(0, 200, 255, 0.4))'
-                        }}
-                        onLoad={() => {
-                          console.log("Image loaded successfully in DOM:", imagePath);
-                          setImageLoaded(true);
-                        }}
-                        onError={(e) => {
-                          console.error("Image failed to load in DOM:", imagePath, e);
-                          setImageError(true);
-                        }}
-                      />
-                    </div>
-                    
-                    {/* Subtle tech border effects on top of the image */}
-                    <div className="absolute inset-0 pointer-events-none">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-700 to-transparent z-10"></div>
-                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-700 to-transparent z-10"></div>
-                      <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-transparent via-cyan-700 to-transparent z-10"></div>
-                      <div className="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-transparent via-cyan-700 to-transparent z-10"></div>
-                    </div>
-                    
-                    {/* Scan line effect */}
-                    <div 
-                      className="absolute inset-0 pointer-events-none overflow-hidden opacity-10 z-10"
-                      style={{
-                        background: 'repeating-linear-gradient(to bottom, transparent, transparent 5px, rgba(0, 200, 255, 0.5) 5px, rgba(0, 200, 255, 0.5) 6px)',
-                        animation: 'scanline 8s linear infinite',
-                      }}
-                    ></div>
-                    
-                    {/* Corner markers */}
-                    <div className="absolute top-0 left-0 w-8 h-8 z-10">
-                      <div className="absolute top-0 left-0 w-8 h-1 bg-cyan-500 opacity-60"></div>
-                      <div className="absolute top-0 left-0 w-1 h-8 bg-cyan-500 opacity-60"></div>
-                    </div>
-                    
-                    <div className="absolute top-0 right-0 w-8 h-8 z-10">
-                      <div className="absolute top-0 right-0 w-8 h-1 bg-cyan-500 opacity-60"></div>
-                      <div className="absolute top-0 right-0 w-1 h-8 bg-cyan-500 opacity-60"></div>
-                    </div>
-                    
-                    <div className="absolute bottom-0 left-0 w-8 h-8 z-10">
-                      <div className="absolute bottom-0 left-0 w-8 h-1 bg-cyan-500 opacity-60"></div>
-                      <div className="absolute bottom-0 left-0 w-1 h-8 bg-cyan-500 opacity-60"></div>
-                    </div>
-                    
-                    <div className="absolute bottom-0 right-0 w-8 h-8 z-10">
-                      <div className="absolute bottom-0 right-0 w-8 h-1 bg-cyan-500 opacity-60"></div>
-                      <div className="absolute bottom-0 right-0 w-1 h-8 bg-cyan-500 opacity-60"></div>
-                    </div>
-                    
-                    {/* Animation styles */}
-                    <style jsx>{`
-                      @keyframes scanline {
-                        0% { transform: translateY(-100%); }
-                        100% { transform: translateY(100%); }
-                      }
-                    `}</style>
-                  </div>
-                )}
-              </div>
-              
-              {/* Power Name Section Header (formerly Description) */}
-              <div 
-                className="w-full text-center py-2 px-3 font-bold"
-                style={{
-                  borderTop: '2px solid rgba(0, 200, 255, 0.8)',
-                  borderBottom: '2px solid rgba(0, 200, 255, 0.8)',
-                  background: 'linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,60,120,0.7) 50%, rgba(0,0,0,0.7) 100%)'
-                }}
-              >
-                {selectedAlien.power.toUpperCase()}
-              </div>
-              
-              {/* Alien Description Text */}
-              <div 
-                className="p-3 text-sm overflow-y-auto"
-                style={{ 
-                  maxHeight: '200px',
-                  background: 'rgba(0, 0, 0, 0.85)'
-                }}
-              >
-                {selectedAlien.description}
-                
-                {/* Additional details */}
-                <div className="mt-3 pt-3 border-t border-gray-700 text-gray-400 text-xs">
-                  <div><span className="text-cyan-400">Type:</span> {selectedAlien.type}</div>
-                  <div><span className="text-cyan-400">Timing:</span> {selectedAlien.timing.phase} phase, {selectedAlien.timing.trigger}</div>
-                  <div><span className="text-cyan-400">Usage:</span> {selectedAlien.usage}</div>
+                  )}
                 </div>
                 
-                {/* Flavor text in italics */}
-                <div className="mt-3 italic text-gray-500 text-xs">
-                  {selectedAlien.flavor}
+                {/* Alien Details Section */}
+                <div className="text-sm space-y-2">
+                  <div className="text-yellow-400 font-bold">{selectedAlien.power}</div>
+                  <div className="text-gray-300 text-xs">{selectedAlien.description}</div>
+                  
+                  {/* Additional Info Section */}
+                  <div className="mt-4 border-t border-blue-900 pt-2 text-xs text-gray-400">
+                    <div>
+                      <span className="text-cyan-400">Type:</span> {selectedAlien.type}
+                    </div>
+                    <div>
+                      <span className="text-cyan-400">Usage:</span> {selectedAlien.usage}
+                    </div>
+                    <div className="mt-2 italic">
+                      "{selectedAlien.flavor}"
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Corner effects on the card */}
-            <div className="absolute top-0 left-0 w-5 h-5 z-10">
-              <div className="absolute top-0 left-0 w-5 h-1 bg-cyan-400"></div>
-              <div className="absolute top-0 left-0 w-1 h-5 bg-cyan-400"></div>
-            </div>
-            <div className="absolute top-0 right-0 w-5 h-5 z-10">
-              <div className="absolute top-0 right-0 w-5 h-1 bg-cyan-400"></div>
-              <div className="absolute top-0 right-0 w-1 h-5 bg-cyan-400"></div>
-            </div>
-            <div className="absolute bottom-0 left-0 w-5 h-5 z-10">
-              <div className="absolute bottom-0 left-0 w-5 h-1 bg-cyan-400"></div>
-              <div className="absolute bottom-0 left-0 w-1 h-5 bg-cyan-400"></div>
-            </div>
-            <div className="absolute bottom-0 right-0 w-5 h-5 z-10">
-              <div className="absolute bottom-0 right-0 w-5 h-1 bg-cyan-400"></div>
-              <div className="absolute bottom-0 right-0 w-1 h-5 bg-cyan-400"></div>
-            </div>
+            )}
           </div>
         </div>
       )}

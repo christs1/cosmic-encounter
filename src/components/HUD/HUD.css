@@ -1,0 +1,48 @@
+/* Scanline Animation */
+@keyframes scanline {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}
+
+/* Alien Card Styles */
+.alien-card-minimized {
+  height: auto !important;
+}
+
+.alien-card-minimized .alien-card-body {
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+/* Card type colors */
+.card-attack {
+  background: linear-gradient(to bottom, #d33 0%, #900 100%);
+  color: white;
+}
+
+.card-negotiate {
+  background: linear-gradient(to bottom, #3c3 0%, #060 100%);
+  color: white;
+}
+
+.card-reinforcement {
+  background: linear-gradient(to bottom, #33c 0%, #006 100%);
+  color: white;
+}
+
+.card-artifact {
+  background: linear-gradient(to bottom, #c3c 0%, #606 100%);
+  color: white;
+}
+
+.card-flare {
+  background: linear-gradient(to bottom, #fc3 0%, #c90 100%);
+  color: black;
+} 

@@ -1,0 +1,148 @@
+{
+  "cards": [
+    {
+      "id": 1,
+      "type": "attack",
+      "value": 4,
+      "count": 5,
+      "description": "Attack with a value of 4."
+    },
+    {
+      "id": 2,
+      "type": "attack",
+      "value": 6,
+      "count": 5,
+      "description": "Attack with a value of 6."
+    },
+    {
+      "id": 3,
+      "type": "attack",
+      "value": 8,
+      "count": 5,
+      "description": "Attack with a value of 8."
+    },
+    {
+      "id": 4,
+      "type": "attack",
+      "value": 10,
+      "count": 5,
+      "description": "Attack with a value of 10."
+    },
+    {
+      "id": 5,
+      "type": "attack",
+      "value": 12,
+      "count": 5,
+      "description": "Attack with a value of 12."
+    },
+    {
+      "id": 6,
+      "type": "attack",
+      "value": 14,
+      "count": 5,
+      "description": "Attack with a value of 14."
+    },
+    {
+      "id": 7,
+      "type": "attack",
+      "value": 16,
+      "count": 5,
+      "description": "Attack with a value of 16."
+    },
+    {
+      "id": 8,
+      "type": "attack",
+      "value": 20,
+      "count": 5,
+      "description": "Attack with a value of 20."
+    },
+    {
+      "id": 9,
+      "type": "negotiate",
+      "count": 15,
+      "description": "Make a deal with your opponent to exchange cards or establish colonies."
+    },
+    {
+      "id": 10,
+      "type": "reinforcement",
+      "value": 2,
+      "count": 5,
+      "description": "Add 2 to your side's total in an encounter."
+    },
+    {
+      "id": 11,
+      "type": "reinforcement", 
+      "value": 3,
+      "count": 5,
+      "description": "Add 3 to your side's total in an encounter."
+    },
+    {
+      "id": 12,
+      "type": "artifact",
+      "name": "Cosmic Zap",
+      "count": 3,
+      "description": "Cancels another player's alien power for one encounter."
+    },
+    {
+      "id": 13,
+      "type": "artifact",
+      "name": "Force Field",
+      "count": 3,
+      "description": "Makes one planet immune to all offensive actions for one round."
+    },
+    {
+      "id": 14,
+      "type": "flare",
+      "alienId": 1,
+      "name": "Mirror Flare",
+      "count": 1,
+      "description": "Wild: Reverse the digits of one player's attack card even if not in the encounter. Super: Reverse the digits of all attack cards in one encounter."
+    },
+    {
+      "id": 15,
+      "type": "flare",
+      "alienId": 5,
+      "name": "Inferno Flare",
+      "count": 1,
+      "description": "Wild: Discard up to 3 ships from any one planet to the warp. Super: After winning, you may discard your hand to burn the planet."
+    }
+  ],
+  "destinyCards": [
+    {
+      "id": 1,
+      "type": "color",
+      "value": "red",
+      "count": 3
+    },
+    {
+      "id": 2,
+      "type": "color",
+      "value": "blue",
+      "count": 3
+    },
+    {
+      "id": 3,
+      "type": "color",
+      "value": "green",
+      "count": 3
+    },
+    {
+      "id": 4,
+      "type": "color",
+      "value": "yellow",
+      "count": 3
+    },
+    {
+      "id": 5,
+      "type": "color",
+      "value": "purple",
+      "count": 3
+    },
+    {
+      "id": 6,
+      "type": "wild",
+      "description": "Choose any player to attack",
+      "count": 5
+    }
+  ]
+} 

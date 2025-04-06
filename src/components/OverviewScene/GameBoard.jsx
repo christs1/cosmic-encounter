@@ -1,35 +1,13 @@
 // src/components/OverviewScene/GameBoard.jsx
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stars, Grid } from '@react-three/drei'
-import Planet from './Planet'
-import Warp from './Warp'
-import React, { useRef, useMemo } from 'react'
-import HUD from '../HUD/HUD'
-
-// Starfield component for the background
-function Starfield() {
-  const starsRef = useRef()
-  
-  useFrame(({ clock }) => {
-    if (starsRef.current) {
-      // Slow rotation of the starfield for a dynamic effect
-      starsRef.current.rotation.y = clock.getElapsedTime() * 0.02
-    }
-  })
-  
-  return (
-    <Stars 
-      ref={starsRef}
-      radius={100} 
-      depth={50} 
-      count={5000} 
-      factor={4} 
-      saturation={0} 
-      fade 
-      speed={1}
-    />
-  )
-}
+import { OrbitControls, Grid } from '@react-three/drei'
+import React, { useRef, useMemo, useState, useEffect } from 'react'
+import EnhancedPlanet from './EnhancedPlanet'
+import EnhancedWarp from './EnhancedWarp'
+import EnhancedSpaceship from './EnhancedSpaceship'
+import EnhancedStarfield from './EnhancedStarfield'
+import EnhancedBackground from './EnhancedBackground'
+import { loadTextures } from '../utils/textureLoader'
 
 // Cyan grid component
 function CyanGrid() {
@@ -46,79 +24,6 @@ function CyanGrid() {
       infiniteGrid
       position={[0, -5, 0]}
     />
-  )
-}
-
-// Individual star with custom geometry for the foreground
-function ForegroundStar({ position, size, color, twinkleSpeed, movementSpeed, movementRadius }) {
-  const meshRef = useRef()
-  const initialPosition = useRef(position)
-  
-  useFrame(({ clock }) => {
-    if (meshRef.current) {
-      const time = clock.getElapsedTime()
-      
-      // Make the star twinkle by slightly adjusting its scale
-      const twinkle = 0.7 + Math.sin(time * twinkleSpeed) * 0.3
-      meshRef.current.scale.set(twinkle, twinkle, twinkle)
-      
-      // Make the star float around in a small, random path
-      const [x0, y0, z0] = initialPosition.current
-      
-      // Create a unique, random-looking movement pattern for each star
-      // Using sin and cos with different frequencies and phase offsets
-      const xOffset = Math.sin(time * movementSpeed) * movementRadius
-      const yOffset = Math.cos(time * movementSpeed * 0.8 + 1.0) * movementRadius
-      const zOffset = Math.sin(time * movementSpeed * 0.6 + 2.0) * movementRadius
-      
-      meshRef.current.position.set(
-        x0 + xOffset,
-        y0 + yOffset,
-        z0 + zOffset
-      )
-    }
-  })
-  
-  return (
-    <mesh ref={meshRef} position={position}>
-      <sphereGeometry args={[size, 8, 8]} />
-      <meshBasicMaterial color={color} />
-    </mesh>
-  )
-}
-
-// Component to generate a layer of foreground stars
-function ForegroundStars({ count = 100, minDist = 5, maxDist = 20 }) {
-  // Generate random star positions in a 3D space
-  const stars = useMemo(() => {
-    return Array.from({ length: count }).map(() => {
-      // Create random position in a sphere around the scene
-      const theta = Math.random() * Math.PI * 2 // full circle
-      const phi = Math.acos(2 * Math.random() - 1) // for even distribution on sphere
-      const distance = minDist + Math.random() * (maxDist - minDist)
-      const x = distance * Math.sin(phi) * Math.cos(theta)
-      const y = distance * Math.sin(phi) * Math.sin(theta)
-      const z = distance * Math.cos(phi)
-      
-      return {
-        position: [x, y, z],
-        size: 0.01 + Math.random() * 0.03, // smaller star sizes
-        color: Math.random() > 0.9 ? 
-               ['#f8e3a3', '#f0c7e8', '#a3ccf8'][Math.floor(Math.random() * 3)] : // some colored stars
-               '#ffffff', // most stars are white
-        twinkleSpeed: 0.5 + Math.random() * 2, // random twinkle speed
-        movementSpeed: 0.1 + Math.random() * 0.2, // random movement speed
-        movementRadius: 0.2 + Math.random() * 0.8 // random movement radius
-      }
-    })
-  }, [count, minDist, maxDist])
-  
-  return (
-    <group>
-      {stars.map((props, i) => (
-        <ForegroundStar key={i} {...props} />
-      ))}
-    </group>
   )
 }
 
@@ -154,17 +59,33 @@ function ConstrainedControls({ radius }) {
   )
 }
 
-export default function GameBoard() {
+// Main scene component that loads textures and renders all game objects
+function GameScene() {
+  const [textures, setTextures] = useState(null)
+  const [loadingTextures, setLoadingTextures] = useState(true)
   const totalPlayers = 6
   const planetsPerPlayer = 5
-  const radius = 12  // Increased radius of the main circle around the warp
+  const radius = 12  // Radius of the main circle around the warp
 
   const players = [
     'red', 'blue', 'yellow', 'green', 'magenta', 'cyan'
   ]
 
+  // Load textures
+  useEffect(() => {
+    setLoadingTextures(true);
+    loadTextures().then(loadedTextures => {
+      console.log("Textures loaded for game scene", loadedTextures);
+      setTextures(loadedTextures);
+      setLoadingTextures(false);
+    }).catch(error => {
+      console.error("Error loading textures:", error);
+      setLoadingTextures(false);
+    });
+  }, []);
+
   // Function to get circular positions
-  const generatePlanetPositions = () => {
+  const planetPositions = useMemo(() => {
     const allPositions = []
     
     // The angle span for each player's territory
@@ -197,43 +118,92 @@ export default function GameBoard() {
         
         allPositions.push({
           position: [x, 0, z],
-          color: players[p]
+          color: players[p],
+          id: `${players[p]}-${i}`
         })
       }
     }
+    
     return allPositions
-  }
+  }, [])
 
-  const planetPositions = generatePlanetPositions()
+  // Create positions for ships (4 per planet)
+  const shipPositions = useMemo(() => {
+    if (!planetPositions) return [];
+    
+    const ships = [];
+    planetPositions.forEach((planet, planetIndex) => {
+      // Place 4 ships per planet
+      for (let i = 0; i < 4; i++) {
+        ships.push({
+          color: planet.color,
+          planetPosition: planet.position,
+          shipIndex: i,
+          id: `${planet.id}-ship-${i}`
+        });
+      }
+    });
+    
+    return ships;
+  }, [planetPositions]);
+
+  useEffect(() => {
+    console.log("Ship positions:", shipPositions.length); 
+  }, [shipPositions]);
 
   return (
-    <div className="h-screen relative">
-      <Canvas camera={{ position: [0, 15, 15], fov: 60 }}>
-        {/* Starfield background */}
-        <Starfield />
-        
-        {/* Cyan Grid */}
-        <CyanGrid />
-        
-        {/* Scene lighting */}
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[5, 10, 5]} intensity={0.6} />
-        
-        {/* Warp and planets */}
-        <Warp />
-        {planetPositions.map((planet, i) => (
-          <Planet key={i} position={planet.position} color={planet.color} />
-        ))}
-        
-        {/* Foreground stars with custom geometry */}
-        <ForegroundStars count={150} minDist={3} maxDist={20} />
-        
-        {/* Constrained camera controls */}
-        <ConstrainedControls radius={radius} />
-      </Canvas>
+    <>
+      {/* Starfield and Background */}
+      <EnhancedStarfield />
+      <EnhancedBackground textures={textures} />
       
-      {/* HUD overlay */}
-      <HUD />
-    </div>
+      {/* Lighting */}
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[10, 10, 5]} intensity={1} />
+      
+      {/* Enhanced Warp (Black Hole) */}
+      <EnhancedWarp textures={textures} scale={0.6} />
+      
+      {/* Grid */}
+      <CyanGrid />
+      
+      {/* Planets */}
+      {planetPositions.map((planet) => (
+        <EnhancedPlanet
+          key={planet.id}
+          position={planet.position}
+          color={planet.color}
+          textures={textures}
+          scale={0.4}
+        />
+      ))}
+      
+      {/* Ships - Debug output if ships aren't rendering */}
+      {console.log("Rendering ships:", shipPositions.length)}
+      {shipPositions.map((ship) => (
+        <EnhancedSpaceship
+          key={ship.id}
+          position={[0, 0, 0]} // Provide initial position
+          color={ship.color}
+          textures={textures}
+          planetPosition={ship.planetPosition}
+          shipIndex={ship.shipIndex}
+        />
+      ))}
+    </>
+  )
+}
+
+export default function GameBoard() {
+  return (
+    <Canvas 
+      camera={{ position: [0, 15, 20], fov: 60 }}
+      gl={{ antialias: true, logarithmicDepthBuffer: true }}
+      dpr={[1, 2]} // Responsive DPR based on device capability
+      style={{ background: '#000000' }}
+    >
+      <GameScene />
+      <ConstrainedControls radius={12} />
+    </Canvas>
   )
 }
